@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "modid",
+  "version": "${version}",
+
+  "name": "Starting Notes",
+  "description": "Add written books to the players inventory when they first spawn in the world",
+  "authors": [
+    "Acro"
+  ],
+  "contact": {
+    "homepage": "acro.rf.gd",
+    "sources": "https://github.com/JSJBDEV/StartingNotes"
+  },
+
+  "license": "MIT",
+  "icon": "assets/startingnotes/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "gd.rf.acro.startingnotes.StartingNotes"
+    ]
+  },
+  "mixins": [
+    "modid.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  },
+  "suggests": {
+    "flamingo": "*"
+  }
+}
