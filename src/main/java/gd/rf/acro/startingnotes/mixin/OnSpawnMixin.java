@@ -1,59 +1,46 @@
 package gd.rf.acro.startingnotes.mixin;
 
-import net.minecraft.client.gui.screen.TitleScreen;
+
+import gd.rf.acro.startingnotes.StartingNote;
+import gd.rf.acro.startingnotes.StartingNotes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.apache.commons.io.FileUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
+
 
 @Mixin(ServerPlayerEntity.class)
 public class OnSpawnMixin {
-    @Inject(at = @At("TAIL"), method = "onSpawn")
-    public void onSpawn(CallbackInfo ci)
-    {
-        ServerPlayerEntity player =((ServerPlayerEntity)(Object)this);
-        if(!player.getScoreboardTags().contains("sn_spawned"))
-        {
-            try
-            {
-                List<String> books = FileUtils.readLines(new File("./config/StartingNotes/books.txt"),"utf-8");
-                for (String book : books) {
-                    List<String> abook = FileUtils.readLines(new File("./config/StartingNotes/"+book),"utf-8");
-                    String author = abook.remove(0);
-                    String title = abook.remove(0);
-                    player.giveItemStack(createBook(author,title,abook.toArray()));
-                }
-                player.addScoreboardTag("sn_spawned");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    private static ItemStack createBook(String author, String title, Object ...pages)
-    {
+    private static ItemStack createBook(String author, String title, List<String> pages) {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        CompoundTag tags = new CompoundTag();
-        tags.putString("author",author);
-        tags.putString("title",title);
-        ListTag contents = new ListTag();
+        NbtCompound tags = new NbtCompound();
+        tags.putString("author", author);
+        tags.putString("title", title);
+        NbtList contents = new NbtList();
         for (Object page : pages) {
-            contents.add(StringTag.of("{\"text\":\""+page+"\"}"));
+            contents.add(NbtString.of("{\"text\":\"" + page + "\"}"));
         }
-        tags.put("pages",contents);
-        book.setTag(tags);
+        tags.put("pages", contents);
+        book.setNbt(tags);
         return book;
+    }
+    
+    @Inject(at = @At("TAIL"), method = "onSpawn")
+    public void onSpawn(CallbackInfo ci) {
+        ServerPlayerEntity player = ((ServerPlayerEntity) (Object) this);
+        if (!player.getScoreboardTags().contains("sn_spawned")) {
+            for (StartingNote note : StartingNotes.STARTING_NOTES) {
+                player.giveItemStack(createBook(note.getAuthor(), note.getTitle(), note.getPages()));
+            }
+            player.addScoreboardTag("sn_spawned");
+        }
     }
 }
